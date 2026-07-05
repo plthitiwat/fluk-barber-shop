@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FLUK BARBER SHOP · ระบบจองคิว</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1E2027;
+    --ink-soft:#4A4D57;
+    --bg:#E9E5DE;
+    --panel:#FFFFFF;
+    --line:#D9D2C4;
+    --gold:#B8862E;
+    --gold-deep:#8C6420;
+    --brick:#7A2E2E;
+    --cream:#F3EFE6;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Inter',sans-serif;
+    background:var(--bg);
+    color:var(--ink);
+  }
+  .app{max-width:520px;margin:0 auto;min-height:100vh;background:var(--cream);
+    box-shadow:0 0 40px rgba(0,0,0,0.08);position:relative;}
+
+  /* Barber pole stripe — signature element */
+  .pole-stripe{
+    height:10px;
+    background:repeating-linear-gradient(
+      45deg,
+      var(--brick) 0 10px,
+      var(--cream) 10px 20px,
+      var(--ink) 20px 30px,
+      var(--cream) 30px 40px
+    );
+  }
+
+  header.top{
+    background:var(--ink);
+    color:var(--cream);
+    padding:22px 20px 18px;
+    position:relative;
+  }
+  header.top h1{
+    font-family:'Bebas Neue',sans-serif;
+    font-size:38px;
+    letter-spacing:1.5px;
+    margin:0 0 2px;
+    line-height:1;
+  }
+  header.top p{margin:0;color:#C9C4B8;font-size:13px;font-weight:500;}
+
+  nav.tabs{display:flex;background:var(--panel);border-bottom:1px solid var(--line);}
+  nav.tabs button{
+    flex:1;padding:14px 8px;border:none;background:none;cursor:pointer;
+    font-family:'Inter';font-weight:700;font-size:14px;color:var(--ink-soft);
+    border-bottom:3px solid transparent;transition:.15s;
+  }
+  nav.tabs button.active{color:var(--gold-deep);border-bottom-color:var(--gold);}
+
+  main{padding:20px;padding-bottom:60px;}
+  section{display:none;}
+  section.active{display:block;}
+
+  .card{
+    background:var(--panel);border:1px solid var(--line);border-radius:10px;
+    padding:18px;margin-bottom:16px;
+  }
+  .card h2{
+    font-family:'Bebas Neue';font-size:20px;letter-spacing:.5px;
+    margin:0 0 12px;color:var(--ink);
+  }
+  .eyebrow{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;
+    color:var(--gold-deep);margin:0 0 6px;}
+
+  .chip-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px;}
+  .chip{
+    padding:10px 6px;border:1.5px solid var(--line);border-radius:8px;background:var(--cream);
+    font-size:13px;font-weight:600;cursor:pointer;text-align:center;transition:.15s;color:var(--ink-soft);
+  }
+  .chip:hover{border-color:var(--gold);}
+  .chip.selected{background:var(--ink);color:var(--cream);border-color:var(--ink);}
+  .chip.disabled{opacity:.35;cursor:not-allowed;text-decoration:line-through;}
+  .chip.taken{opacity:.35;cursor:not-allowed;text-decoration:line-through;}
+
+  label{display:block;font-size:12px;font-weight:700;color:var(--ink-soft);margin:10px 0 5px;}
+  input[type=text],input[type=tel],input[type=date],input[type=time],input[type=number],input[type=password],select{
+    width:100%;padding:10px 12px;border:1.5px solid var(--line);border-radius:8px;
+    font-family:'Inter';font-size:14px;background:var(--cream);color:var(--ink);
+  }
+  input:focus,select:focus{outline:2px solid var(--gold);outline-offset:1px;border-color:var(--gold);}
+
+  button.primary{
+    width:100%;padding:13px;background:var(--gold-deep);color:#fff;border:none;
+    border-radius:8px;font-family:'Inter';font-weight:800;font-size:15px;cursor:pointer;
+    margin-top:14px;letter-spacing:.3px;
+  }
+  button.primary:hover{background:var(--gold);}
+  button.primary:disabled{background:#c8c2b4;cursor:not-allowed;}
+  button.secondary{
+    background:transparent;border:1.5px solid var(--brick);color:var(--brick);
+    padding:8px 12px;border-radius:7px;font-weight:700;font-size:12px;cursor:pointer;
+  }
+  button.ghost{
+    background:none;border:none;color:var(--ink-soft);font-size:12px;font-weight:700;
+    cursor:pointer;text-decoration:underline;padding:0;
+  }
+
+  .price-tag{
+    display:inline-block;background:var(--ink);color:var(--gold);font-family:'Bebas Neue';
+    font-size:22px;padding:2px 12px;border-radius:6px;letter-spacing:1px;
+  }
+
+  .booking-row{
+    display:flex;justify-content:space-between;align-items:center;padding:10px 0;
+    border-bottom:1px solid var(--line);gap:10px;
+  }
+  .booking-row:last-child{border-bottom:none;}
+  .booking-row .info{font-size:13px;line-height:1.5;}
+  .booking-row .info b{font-size:14px;}
+  .booking-row .info .muted{color:var(--ink-soft);font-size:12px;}
+
+  .day-row{
+    display:flex;justify-content:space-between;align-items:center;padding:8px 0;
+    border-bottom:1px solid var(--line);font-size:13px;
+  }
+  .day-row:last-child{border-bottom:none;}
+
+  .empty{color:var(--ink-soft);font-size:13px;text-align:center;padding:20px 0;}
+
+  .confirm-box{
+    background:var(--ink);color:var(--cream);border-radius:10px;padding:20px;text-align:center;
+  }
+  .confirm-box .id{
+    font-family:'Bebas Neue';font-size:28px;letter-spacing:2px;color:var(--gold);margin:6px 0 2px;
+  }
+  .confirm-box .line{border-top:1px dashed #4A4D57;margin:12px 0;}
+  .confirm-box .row{display:flex;justify-content:space-between;font-size:13px;padding:3px 0;color:#C9C4B8;}
+  .confirm-box .row b{color:var(--cream);}
+
+  .pin-gate{max-width:280px;margin:60px auto;text-align:center;}
+  .pin-gate .card{text-align:left;}
+
+  .toast{
+    position:fixed;bottom:16px;left:50%;transform:translateX(-50%);
+    background:var(--ink);color:#fff;padding:10px 18px;border-radius:20px;font-size:13px;font-weight:600;
+    opacity:0;pointer-events:none;transition:opacity .25s;z-index:50;
+  }
+  .toast.show{opacity:1;}
+
+  .footnote{font-size:11px;color:var(--ink-soft);text-align:center;margin-top:6px;}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="pole-stripe"></div>
+  <header class="top">
+    <h1>FLUK BARBER SHOP</h1>
+    <p id="headerSub">ระบบจองคิวออนไลน์</p>
+  </header>
+  <nav class="tabs">
+    <button id="tabCustomer" class="active">🧑‍🦱 จองคิว</button>
+    <button id="tabBarber">✂️ ฝั่งช่าง</button>
+  </nav>
+
+  <main>
+    <!-- ===================== CUSTOMER VIEW ===================== -->
+    <section id="customerView" class="active">
+
+      <div class="card">
+        <div class="eyebrow">ขั้นตอนที่ 1</div>
+        <h2>เลือกวันที่</h2>
+        <div id="dateChips" class="chip-grid"><div class="empty">กำลังโหลด...</div></div>
+      </div>
+
+      <div class="card" id="timeCard" style="display:none;">
+        <div class="eyebrow">ขั้นตอนที่ 2</div>
+        <h2>เลือกเวลา</h2>
+        <div id="timeChips" class="chip-grid"></div>
+      </div>
+
+      <div class="card" id="styleCard" style="display:none;">
+        <div class="eyebrow">ขั้นตอนที่ 3</div>
+        <h2>เลือกทรงผม</h2>
+        <div id="styleChips" class="chip-grid"></div>
+      </div>
+
+      <div class="card" id="detailCard" style="display:none;">
+        <div class="eyebrow">ขั้นตอนที่ 4</div>
+        <h2>ข้อมูลติดต่อ</h2>
+        <label for="custName">ชื่อ</label>
+        <input type="text" id="custName" placeholder="ชื่อของคุณ">
+        <label for="custPhone">เบอร์โทร</label>
+        <input type="tel" id="custPhone" placeholder="08X-XXX-XXXX">
+        <div style="margin-top:14px;display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-size:13px;color:var(--ink-soft);">ราคา</span>
+          <span class="price-tag" id="priceDisplay">100 ฿</span>
+        </div>
+        <button class="primary" id="confirmBtn">ยืนยันการจอง</button>
+      </div>
+
+      <div class="card" id="resultCard" style="display:none;"></div>
+
+      <div class="card">
+        <button class="ghost" id="toggleCancelPanel">ต้องการยกเลิกคิว?</button>
+        <div id="cancelPanel" style="display:none;margin-top:10px;">
+          <label for="cancelId">รหัสการจอง</label>
+          <input type="text" id="cancelId" placeholder="เช่น A1B2">
+          <button class="secondary" id="cancelBtn" style="margin-top:10px;width:100%;">ยกเลิกคิวนี้</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== BARBER VIEW ===================== -->
+    <section id="barberView">
+      <div id="pinGateWrap" class="pin-gate">
+        <div class="card">
+          <div class="eyebrow">สำหรับช่างเท่านั้น</div>
+          <h2>เข้าสู่ระบบ</h2>
+          <label for="loginEmail">อีเมล</label>
+          <input type="text" id="loginEmail" placeholder="you@example.com" autocomplete="username">
+          <label for="loginPassword">รหัสผ่าน</label>
+          <input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password">
+          <button class="primary" id="pinSubmit">เข้าสู่ระบบ</button>
+          <p class="footnote">เข้าสู่ระบบด้วยบัญชีที่สร้างไว้ใน Firebase Authentication</p>
+        </div>
+      </div>
+
+      <div id="barberContent" style="display:none;">
+        <div style="display:flex;justify-content:flex-end;margin-bottom:-4px;">
+          <button class="ghost" id="logoutBtn">ออกจากระบบ</button>
+        </div>
+        <div class="card">
+          <h2>ราคาตัดผม</h2>
+          <label for="priceInput">ราคา (บาท)</label>
+          <input type="number" id="priceInput" min="0" step="10">
+          <button class="primary" id="savePriceBtn">บันทึกราคา</button>
+        </div>
+
+        <div class="card">
+          <h2>เปิดรับงานวันใหม่</h2>
+          <label for="newDate">วันที่</label>
+          <input type="date" id="newDate">
+          <div style="display:flex;gap:8px;">
+            <div style="flex:1;">
+              <label for="startTime">เริ่ม</label>
+              <input type="time" id="startTime" value="09:00">
+            </div>
+            <div style="flex:1;">
+              <label for="endTime">เลิก</label>
+              <input type="time" id="endTime" value="18:00">
+            </div>
+          </div>
+          <label for="durationSelect">ความยาวคิว (นาที)</label>
+          <select id="durationSelect">
+            <option value="15">15 นาที</option>
+            <option value="30" selected>30 นาที</option>
+            <option value="45">45 นาที</option>
+            <option value="60">60 นาที</option>
+          </select>
+          <button class="primary" id="addDayBtn">เพิ่มวันเปิดรับงาน</button>
+        </div>
+
+        <div class="card">
+          <h2>วันที่เปิดรับงานอยู่</h2>
+          <div id="openDaysList"><div class="empty">ยังไม่มีวันเปิดรับงาน</div></div>
+        </div>
+
+        <div class="card">
+          <h2>คิวที่จองเข้ามา</h2>
+          <div id="bookingsList"><div class="empty">ยังไม่มีคิวจอง</div></div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- ===================== FIREBASE ===================== -->
+<!-- Firebase compat SDK (works with plain <script> tags, no build step needed) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script>
+// ⚠️ ต้องแก้ค่านี้ให้เป็นของโปรเจกต์ Firebase ของคุณเอง
+// วิธีหา: Firebase Console → Project settings → General → "Your apps" → SDK setup and configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyA7oTLmRQdkRCX6e7Gu7nsVCO_sLTQ6nig",
+  authDomain: "data-haircut.firebaseapp.com",
+  projectId: "data-haircut",
+  storageBucket: "data-haircut.firebasestorage.app",
+  messagingSenderId: "1003275154022",
+  appId: "1:1003275154022:web:c9034b6b883ef57e1e73a7",
+  measurementId: "G-D2LBN7CX64"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const auth = firebase.auth();
+</script>
+
+<script>
+const STYLES = [
+  "ทรงรองทรง (เฟด)", "อันเดอร์คัต", "ทรงสุภาพ", "ทรงเกรียนสั้น",
+  "ทรงพอมพาดัวร์", "โกนหัวเกลี้ยง", "ทรงออกงาน/เซ็ท", "ปรึกษาช่างหน้างาน"
+];
+
+let state = {
+  settings: { price: 100, openDays: {} },
+  bookings: [],
+  selDate: null,
+  selTime: null,
+  selStyle: null
+};
+
+// ---------- storage helpers (Firebase Firestore) ----------
+// settings เก็บที่ collection "settings" เอกสารเดียวชื่อ "main"
+// bookings เก็บที่ collection "bookings" โดยใช้ booking.id เป็นชื่อเอกสาร
+async function loadSettings(){
+  try{
+    const snap = await db.collection('settings').doc('main').get();
+    state.settings = snap.exists ? snap.data() : { price:100, openDays:{} };
+    if(!state.settings.openDays) state.settings.openDays = {};
+  }catch(e){
+    console.error('loadSettings error', e);
+    state.settings = { price:100, openDays:{} };
+    toast('เชื่อมต่อฐานข้อมูลไม่ได้ ตรวจสอบ firebaseConfig');
+  }
+}
+async function saveSettings(){
+  try{
+    await db.collection('settings').doc('main').set(state.settings);
+  }catch(e){
+    console.error('saveSettings error', e);
+    toast('บันทึกไม่สำเร็จ ตรวจสอบการเชื่อมต่อ');
+  }
+}
+async function loadBookings(){
+  try{
+    const snap = await db.collection('bookings').get();
+    state.bookings = snap.docs.map(d => d.data());
+  }catch(e){
+    console.error('loadBookings error', e);
+    state.bookings = [];
+    toast('โหลดข้อมูลการจองไม่สำเร็จ');
+  }
+}
+// เพิ่ม/แก้ไขการจองหนึ่งรายการ (ใช้ booking.id เป็น document id)
+async function addBooking(booking){
+  await db.collection('bookings').doc(booking.id).set(booking);
+}
+// ลบการจองหนึ่งรายการด้วย id
+async function deleteBooking(id){
+  await db.collection('bookings').doc(id).delete();
+}
+
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2200);
+}
+
+function todayStr(){
+  const d = new Date();
+  return d.toISOString().slice(0,10);
+}
+
+function genSlots(start, end, duration){
+  const slots = [];
+  const [sh,sm] = start.split(':').map(Number);
+  const [eh,em] = end.split(':').map(Number);
+  let cur = sh*60+sm;
+  const endMin = eh*60+em;
+  while(cur + Number(duration) <= endMin){
+    const h = Math.floor(cur/60).toString().padStart(2,'0');
+    const m = (cur%60).toString().padStart(2,'0');
+    slots.push(`${h}:${m}`);
+    cur += Number(duration);
+  }
+  return slots;
+}
+
+function fmtDate(dstr){
+  const d = new Date(dstr+'T00:00:00');
+  const days = ['อา','จ','อ','พ','พฤ','ศ','ส'];
+  const months = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  return `${days[d.getDay()]} ${d.getDate()} ${months[d.getMonth()]}`;
+}
+
+// ---------- tabs ----------
+const tabCustomer = document.getElementById('tabCustomer');
+const tabBarber = document.getElementById('tabBarber');
+const customerView = document.getElementById('customerView');
+const barberView = document.getElementById('barberView');
+
+tabCustomer.onclick = () => {
+  tabCustomer.classList.add('active'); tabBarber.classList.remove('active');
+  customerView.classList.add('active'); barberView.classList.remove('active');
+};
+tabBarber.onclick = () => {
+  tabBarber.classList.add('active'); tabCustomer.classList.remove('active');
+  barberView.classList.add('active'); customerView.classList.remove('active');
+  refreshBarberView();
+};
+
+// ---------- customer view rendering ----------
+async function renderCustomerDates(){
+  await loadSettings();
+  await loadBookings();
+  const wrap = document.getElementById('dateChips');
+  const dates = Object.keys(state.settings.openDays).filter(d => d >= todayStr()).sort();
+  if(dates.length === 0){
+    wrap.innerHTML = '<div class="empty">ช่างยังไม่เปิดรับคิวช่วงนี้ ลองกลับมาดูใหม่นะ</div>';
+    return;
+  }
+  wrap.innerHTML = '';
+  dates.forEach(d => {
+    const chip = document.createElement('div');
+    chip.className = 'chip' + (state.selDate === d ? ' selected' : '');
+    chip.textContent = fmtDate(d);
+    chip.onclick = () => { state.selDate = d; state.selTime = null; onDateChosen(); };
+    wrap.appendChild(chip);
+  });
+}
+
+async function onDateChosen(){
+  await renderCustomerDates();
+  document.getElementById('timeCard').style.display = 'block';
+  document.getElementById('styleCard').style.display = 'none';
+  document.getElementById('detailCard').style.display = 'none';
+  await loadBookings();
+  const day = state.settings.openDays[state.selDate];
+  const allSlots = genSlots(day.start, day.end, day.duration);
+  const taken = state.bookings.filter(b => b.date === state.selDate).map(b => b.time);
+  const wrap = document.getElementById('timeChips');
+  wrap.innerHTML = '';
+  if(allSlots.length === 0){
+    wrap.innerHTML = '<div class="empty">ไม่มีช่วงเวลาว่างวันนี้</div>';
+    return;
+  }
+  allSlots.forEach(t => {
+    const isTaken = taken.includes(t);
+    const chip = document.createElement('div');
+    chip.className = 'chip' + (isTaken ? ' taken' : '') + (state.selTime === t ? ' selected' : '');
+    chip.textContent = t;
+    if(!isTaken){
+      chip.onclick = () => { state.selTime = t; onTimeChosen(); };
+    }
+    wrap.appendChild(chip);
+  });
+}
+
+async function onTimeChosen(){
+  await onDateChosen();
+  document.getElementById('styleCard').style.display = 'block';
+  renderStyles();
+}
+
+function renderStyles(){
+  const wrap = document.getElementById('styleChips');
+  wrap.innerHTML = '';
+  STYLES.forEach(s => {
+    const chip = document.createElement('div');
+    chip.className = 'chip' + (state.selStyle === s ? ' selected' : '');
+    chip.textContent = s;
+    chip.onclick = () => { state.selStyle = s; renderStyles(); onStyleChosen(); };
+    wrap.appendChild(chip);
+  });
+}
+
+function onStyleChosen(){
+  document.getElementById('detailCard').style.display = 'block';
+  document.getElementById('priceDisplay').textContent = state.settings.price + ' ฿';
+}
+
+document.getElementById('confirmBtn').onclick = async () => {
+  const name = document.getElementById('custName').value.trim();
+  const phone = document.getElementById('custPhone').value.trim();
+  if(!name || !phone){ toast('กรอกชื่อและเบอร์โทรก่อนนะ'); return; }
+  await loadBookings();
+  const alreadyTaken = state.bookings.some(b => b.date === state.selDate && b.time === state.selTime);
+  if(alreadyTaken){ toast('เวลานี้เพิ่งถูกจองไปแล้ว ลองเลือกเวลาอื่น'); await onDateChosen(); return; }
+
+  const id = Math.random().toString(36).slice(2,6).toUpperCase();
+  const booking = {
+    id, date: state.selDate, time: state.selTime, style: state.selStyle,
+    name, phone, price: state.settings.price, createdAt: Date.now()
+  };
+  await addBooking(booking);
+  state.bookings.push(booking);
+
+  const rc = document.getElementById('resultCard');
+  rc.style.display = 'block';
+  rc.innerHTML = `
+    <div class="confirm-box">
+      <div style="font-size:12px;color:#C9C4B8;">จองคิวสำเร็จ</div>
+      <div class="id">#${id}</div>
+      <div class="line"></div>
+      <div class="row"><span>วันที่</span><b>${fmtDate(booking.date)}</b></div>
+      <div class="row"><span>เวลา</span><b>${booking.time}</b></div>
+      <div class="row"><span>ทรงผม</span><b>${booking.style}</b></div>
+      <div class="row"><span>ราคา</span><b>${booking.price} ฿</b></div>
+      <div class="line"></div>
+      <div style="font-size:11px;color:#C9C4B8;">เก็บรหัส #${id} ไว้ใช้ยกเลิกคิว หากมีเหตุจำเป็น</div>
+    </div>`;
+
+  // reset form for next customer
+  state.selDate = null; state.selTime = null; state.selStyle = null;
+  document.getElementById('custName').value = '';
+  document.getElementById('custPhone').value = '';
+  document.getElementById('timeCard').style.display = 'none';
+  document.getElementById('styleCard').style.display = 'none';
+  document.getElementById('detailCard').style.display = 'none';
+  await renderCustomerDates();
+};
+
+document.getElementById('toggleCancelPanel').onclick = () => {
+  const p = document.getElementById('cancelPanel');
+  p.style.display = p.style.display === 'none' ? 'block' : 'none';
+};
+document.getElementById('cancelBtn').onclick = async () => {
+  const id = document.getElementById('cancelId').value.trim().toUpperCase();
+  if(!id){ toast('กรอกรหัสการจองก่อน'); return; }
+  await loadBookings();
+  const idx = state.bookings.findIndex(b => b.id === id);
+  if(idx === -1){ toast('ไม่พบรหัสนี้'); return; }
+  await deleteBooking(id);
+  state.bookings.splice(idx,1);
+  toast('ยกเลิกคิวเรียบร้อยแล้ว');
+  document.getElementById('cancelId').value = '';
+  await renderCustomerDates();
+  if(state.selDate) await onDateChosen();
+};
+
+// ---------- barber view (Firebase Authentication) ----------
+document.getElementById('pinSubmit').onclick = () => {
+  const email = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  if(!email || !password){ toast('กรอกอีเมลและรหัสผ่านก่อนนะ'); return; }
+  auth.signInWithEmailAndPassword(email, password)
+    .catch(err => {
+      console.error('login error', err);
+      toast('เข้าสู่ระบบไม่สำเร็จ ตรวจสอบอีเมล/รหัสผ่านอีกครั้ง');
+    });
+};
+
+document.getElementById('logoutBtn').onclick = () => auth.signOut();
+
+// สลับหน้าจอ login <-> แผงควบคุมช่าง อัตโนมัติตามสถานะการล็อกอินจริง (ไม่ใช้ PIN ฝังโค้ดอีกต่อไป)
+auth.onAuthStateChanged(user => {
+  if(user){
+    document.getElementById('pinGateWrap').style.display = 'none';
+    document.getElementById('barberContent').style.display = 'block';
+    document.getElementById('loginEmail').value = '';
+    document.getElementById('loginPassword').value = '';
+    refreshBarberView();
+  } else {
+    document.getElementById('pinGateWrap').style.display = 'block';
+    document.getElementById('barberContent').style.display = 'none';
+  }
+});
+
+async function refreshBarberView(){
+  if(document.getElementById('barberContent').style.display === 'none') return;
+  await loadSettings();
+  await loadBookings();
+  document.getElementById('priceInput').value = state.settings.price;
+  renderOpenDays();
+  renderBookingsList();
+}
+
+document.getElementById('savePriceBtn').onclick = async () => {
+  const v = Number(document.getElementById('priceInput').value);
+  if(!v || v < 0){ toast('ใส่ราคาที่ถูกต้อง'); return; }
+  state.settings.price = v;
+  await saveSettings();
+  toast('บันทึกราคาแล้ว');
+};
+
+document.getElementById('addDayBtn').onclick = async () => {
+  const date = document.getElementById('newDate').value;
+  const start = document.getElementById('startTime').value;
+  const end = document.getElementById('endTime').value;
+  const duration = document.getElementById('durationSelect').value;
+  if(!date || !start || !end){ toast('กรอกวันและเวลาให้ครบ'); return; }
+  if(start >= end){ toast('เวลาเริ่มต้องน้อยกว่าเวลาเลิก'); return; }
+  await loadSettings();
+  state.settings.openDays[date] = { start, end, duration };
+  await saveSettings();
+  toast('เพิ่มวันเปิดรับงานแล้ว');
+  renderOpenDays();
+};
+
+function renderOpenDays(){
+  const wrap = document.getElementById('openDaysList');
+  const dates = Object.keys(state.settings.openDays).sort();
+  if(dates.length === 0){ wrap.innerHTML = '<div class="empty">ยังไม่มีวันเปิดรับงาน</div>'; return; }
+  wrap.innerHTML = '';
+  dates.forEach(d => {
+    const day = state.settings.openDays[d];
+    const row = document.createElement('div');
+    row.className = 'day-row';
+    row.innerHTML = `<span>${fmtDate(d)} · ${day.start}-${day.end} (${day.duration} นาที/คิว)</span>`;
+    const btn = document.createElement('button');
+    btn.className = 'secondary';
+    btn.textContent = 'ลบ';
+    btn.onclick = async () => {
+      delete state.settings.openDays[d];
+      await saveSettings();
+      renderOpenDays();
+      toast('ลบวันนี้ออกจากคิวแล้ว');
+    };
+    row.appendChild(btn);
+    wrap.appendChild(row);
+  });
+}
+
+function renderBookingsList(){
+  const wrap = document.getElementById('bookingsList');
+  const sorted = [...state.bookings].sort((a,b) => (a.date+a.time).localeCompare(b.date+b.time));
+  if(sorted.length === 0){ wrap.innerHTML = '<div class="empty">ยังไม่มีคิวจอง</div>'; return; }
+  wrap.innerHTML = '';
+  sorted.forEach(b => {
+    const row = document.createElement('div');
+    row.className = 'booking-row';
+    row.innerHTML = `
+      <div class="info">
+        <b>${fmtDate(b.date)} · ${b.time}</b><br>
+        ${b.name} (${b.phone}) — ${b.style}<br>
+        <span class="muted">รหัส #${b.id} · ${b.price} ฿</span>
+      </div>`;
+    const btn = document.createElement('button');
+    btn.className = 'secondary';
+    btn.textContent = 'ยกเลิก';
+    btn.onclick = async () => {
+      await deleteBooking(b.id);
+      state.bookings = state.bookings.filter(x => x.id !== b.id);
+      renderBookingsList();
+      toast('ยกเลิกคิวแล้ว');
+    };
+    row.appendChild(btn);
+    wrap.appendChild(row);
+  });
+}
+
+// ---------- init ----------
+document.getElementById('newDate').min = todayStr();
+renderCustomerDates();
+</script>
+</body>
+</html>
