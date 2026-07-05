@@ -483,41 +483,52 @@ document.getElementById('confirmBtn').onclick = async () => {
   const name = document.getElementById('custName').value.trim();
   const phone = document.getElementById('custPhone').value.trim();
   if(!name || !phone){ toast('กรอกชื่อและเบอร์โทรก่อนนะ'); return; }
-  await loadBookings();
-  const alreadyTaken = state.bookings.some(b => b.date === state.selDate && b.time === state.selTime);
-  if(alreadyTaken){ toast('เวลานี้เพิ่งถูกจองไปแล้ว ลองเลือกเวลาอื่น'); await onDateChosen(); return; }
 
-  const id = Math.random().toString(36).slice(2,6).toUpperCase();
-  const booking = {
-    id, date: state.selDate, time: state.selTime, style: state.selStyle,
-    name, phone, price: state.settings.price, createdAt: Date.now()
-  };
-  await addBooking(booking);
-  state.bookings.push(booking);
+  const btn = document.getElementById('confirmBtn');
+  btn.disabled = true; btn.textContent = 'กำลังบันทึก...';
 
-  const rc = document.getElementById('resultCard');
-  rc.style.display = 'block';
-  rc.innerHTML = `
-    <div class="confirm-box">
-      <div style="font-size:12px;color:#C9C4B8;">จองคิวสำเร็จ</div>
-      <div class="id">#${id}</div>
-      <div class="line"></div>
-      <div class="row"><span>วันที่</span><b>${fmtDate(booking.date)}</b></div>
-      <div class="row"><span>เวลา</span><b>${booking.time}</b></div>
-      <div class="row"><span>ทรงผม</span><b>${booking.style}</b></div>
-      <div class="row"><span>ราคา</span><b>${booking.price} ฿</b></div>
-      <div class="line"></div>
-      <div style="font-size:11px;color:#C9C4B8;">เก็บรหัส #${id} ไว้ใช้ยกเลิกคิว หากมีเหตุจำเป็น</div>
-    </div>`;
+  try{
+    await loadBookings();
+    const alreadyTaken = state.bookings.some(b => b.date === state.selDate && b.time === state.selTime);
+    if(alreadyTaken){ toast('เวลานี้เพิ่งถูกจองไปแล้ว ลองเลือกเวลาอื่น'); await onDateChosen(); return; }
 
-  // reset form for next customer
-  state.selDate = null; state.selTime = null; state.selStyle = null;
-  document.getElementById('custName').value = '';
-  document.getElementById('custPhone').value = '';
-  document.getElementById('timeCard').style.display = 'none';
-  document.getElementById('styleCard').style.display = 'none';
-  document.getElementById('detailCard').style.display = 'none';
-  await renderCustomerDates();
+    const id = Math.random().toString(36).slice(2,6).toUpperCase();
+    const booking = {
+      id, date: state.selDate, time: state.selTime, style: state.selStyle,
+      name, phone, price: state.settings.price, createdAt: Date.now()
+    };
+    await addBooking(booking);
+    state.bookings.push(booking);
+
+    const rc = document.getElementById('resultCard');
+    rc.style.display = 'block';
+    rc.innerHTML = `
+      <div class="confirm-box">
+        <div style="font-size:12px;color:#C9C4B8;">จองคิวสำเร็จ</div>
+        <div class="id">#${id}</div>
+        <div class="line"></div>
+        <div class="row"><span>วันที่</span><b>${fmtDate(booking.date)}</b></div>
+        <div class="row"><span>เวลา</span><b>${booking.time}</b></div>
+        <div class="row"><span>ทรงผม</span><b>${booking.style}</b></div>
+        <div class="row"><span>ราคา</span><b>${booking.price} ฿</b></div>
+        <div class="line"></div>
+        <div style="font-size:11px;color:#C9C4B8;">เก็บรหัส #${id} ไว้ใช้ยกเลิกคิว หากมีเหตุจำเป็น</div>
+      </div>`;
+
+    // reset form for next customer
+    state.selDate = null; state.selTime = null; state.selStyle = null;
+    document.getElementById('custName').value = '';
+    document.getElementById('custPhone').value = '';
+    document.getElementById('timeCard').style.display = 'none';
+    document.getElementById('styleCard').style.display = 'none';
+    document.getElementById('detailCard').style.display = 'none';
+    await renderCustomerDates();
+  }catch(err){
+    console.error('confirm booking error', err);
+    toast('จองคิวไม่สำเร็จ: ' + (err.code || err.message || 'ตรวจสอบการเชื่อมต่อ/Firestore Rules'));
+  }finally{
+    btn.disabled = false; btn.textContent = 'ยืนยันการจอง';
+  }
 };
 
 document.getElementById('toggleCancelPanel').onclick = () => {
