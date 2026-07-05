@@ -104,6 +104,28 @@
   .chip.disabled{opacity:.35;cursor:not-allowed;text-decoration:line-through;}
   .chip.taken{opacity:.35;cursor:not-allowed;text-decoration:line-through;}
 
+  .addon-block{margin-top:14px;}
+  .addon-toggle{
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+    padding:12px 14px;border:1.5px solid var(--line);border-radius:10px;background:var(--cream);
+    cursor:pointer;transition:.15s;
+  }
+  .addon-toggle:hover{border-color:var(--gold);}
+  .addon-toggle .addon-label{font-size:13px;font-weight:700;color:var(--ink-soft);display:flex;align-items:center;gap:8px;}
+  .addon-toggle .addon-price{font-size:12px;font-weight:700;color:var(--gold-deep);}
+  .addon-toggle.selected{background:var(--ink);border-color:var(--ink);}
+  .addon-toggle.selected .addon-label{color:var(--cream);}
+  .addon-toggle.selected .addon-price{color:var(--gold);}
+  .addon-toggle .addon-switch{
+    width:38px;height:22px;border-radius:999px;background:var(--line);position:relative;flex-shrink:0;transition:.15s;
+  }
+  .addon-toggle .addon-switch::after{
+    content:'';position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;
+    background:#fff;transition:.15s;box-shadow:0 1px 2px rgba(0,0,0,0.25);
+  }
+  .addon-toggle.selected .addon-switch{background:var(--gold);}
+  .addon-toggle.selected .addon-switch::after{left:18px;}
+
   label{display:block;font-size:12px;font-weight:700;color:var(--ink-soft);margin:10px 0 5px;}
   input[type=text],input[type=tel],input[type=date],input[type=time],input[type=number],input[type=password],select{
     width:100%;padding:10px 12px;border:1.5px solid var(--line);border-radius:8px;
@@ -152,6 +174,17 @@
     background:linear-gradient(135deg,var(--c-red-deep),var(--c-red));color:#fff;border-color:var(--c-red);
   }
   body.theme-dark .chip.disabled,body.theme-dark .chip.taken{opacity:.3;}
+  body.theme-dark .addon-toggle{background:#1f2025;border-color:var(--c-card-line);}
+  body.theme-dark .addon-toggle:hover{border-color:var(--c-red);}
+  body.theme-dark .addon-toggle .addon-label{color:var(--c-text-soft);}
+  body.theme-dark .addon-toggle .addon-price{color:var(--c-red);}
+  body.theme-dark .addon-toggle.selected{
+    background:linear-gradient(135deg,var(--c-red-deep),var(--c-red));border-color:var(--c-red);
+  }
+  body.theme-dark .addon-toggle.selected .addon-label{color:#fff;}
+  body.theme-dark .addon-toggle.selected .addon-price{color:#fff;}
+  body.theme-dark .addon-toggle .addon-switch{background:#33343a;}
+  body.theme-dark .addon-toggle.selected .addon-switch{background:rgba(255,255,255,0.35);}
   body.theme-dark .empty{color:var(--c-text-soft);}
   body.theme-dark button.primary{
     background:linear-gradient(135deg,var(--c-red-deep),var(--c-red));
@@ -308,6 +341,15 @@
         <div class="eyebrow">ขั้นตอนที่ 3</div>
         <h2>เลือกทรงผม</h2>
         <div id="styleChips" class="chip-grid"></div>
+
+        <div class="addon-block">
+          <label style="margin:14px 0 5px;">เพิ่มเติม (ไม่บังคับ)</label>
+          <div class="addon-toggle" id="photoAddonToggle">
+            <span class="addon-label">📷 ถ่ายรูป (กล้องฟิล์ม) <span class="addon-price">+50 ฿</span></span>
+            <span class="addon-switch"></span>
+          </div>
+          <div class="addon-note" id="photoAddonPriceNote" style="margin-top:6px;text-align:right;font-size:11px;color:var(--c-text-soft);">ถ้าเลือก จะเพิ่ม 50 ฿ จากราคาตัด · ไม่เลือกก็ไปต่อได้ตามปกติ</div>
+        </div>
       </div>
 
       <div class="card" id="detailCard" style="display:none;">
@@ -409,7 +451,6 @@
 
 <!-- ===================== FIREBASE ===================== -->
 <!-- Firebase compat SDK (works with plain <script> tags, no build step needed) -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
@@ -432,8 +473,8 @@ const auth = firebase.auth();
 
 <script>
 const STYLES = [
-  "ทรงรองทรง (เฟด)", "อันเดอร์คัต", "ทรงสุภาพ", "ทรงเกรียนสั้น",
-  "ทรงพอมพาดัวร์", "โกนหัวเกลี้ยง", "ทรงออกงาน/เซ็ท", "ปรึกษาช่างหน้างาน"
+  "ทรงรองทรง (เฟด)", "ทรงรองทรง (ไม่เฟด)", "ทรูบล็อค", "ทรงนักเรียน",
+  "สกินเฟด", "โกนหัวตบดังแป๊ะ", "ทรงมันส์ๆ", "ปรึกษาช่างหน้างาน"
 ];
 
 // กวนฮา/ตลก: แทนที่ QR โค้ดด้วย GIF ฮา ๆ จาก Tenor แบบสุ่ม (ดึงจากคลัง GIF ที่คัดมาแล้ว)
@@ -448,13 +489,20 @@ function getRandomFunnyGif(){
   return TENOR_FUNNY_GIFS[Math.floor(Math.random() * TENOR_FUNNY_GIFS.length)];
 }
 
+const PHOTO_ADDON_PRICE = 50;
+
 let state = {
   settings: { price: 100, openDays: {} },
   bookings: [],
   selDate: null,
   selTime: null,
-  selStyle: null
+  selStyle: null,
+  addPhotoShoot: false
 };
+
+function computeTotalPrice(){
+  return state.settings.price + (state.addPhotoShoot ? PHOTO_ADDON_PRICE : 0);
+}
 
 // ---------- storage helpers (Firebase Firestore) ----------
 // settings เก็บที่ collection "settings" เอกสารเดียวชื่อ "main"
@@ -540,38 +588,42 @@ function buildGoogleCalendarUrl(booking){
   return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${text}&dates=${toStr(startMin)}/${toStr(endMin)}&details=${details}&location=${location}`;
 }
 
-// สร้างรูปภาพตั๋วจากการ์ดยืนยัน แล้วให้แชร์ (Web Share) หรือดาวน์โหลด ขนาดเหมาะสำหรับโพสต์ Instagram
+// แชร์ GIF กวนฮาตัวเดียวกับที่โผล่ในตั๋วตอนจองเสร็จ (แชร์ไฟล์ .gif จริง ไม่ใช่การแคปหน้าจอ
+// เพื่อให้ GIF ยังขยับได้ตอนโพสต์ลง Instagram Story)
 async function shareTicketImage(booking, btn){
-  const ticketEl = document.getElementById('ticketToShare');
-  if(!ticketEl || typeof html2canvas === 'undefined'){ toast('ไม่สามารถสร้างรูปตั๋วได้ตอนนี้'); return; }
+  const gifUrl = booking.funnyGif;
+  if(!gifUrl){ toast('ไม่พบ GIF สำหรับแชร์'); return; }
   const originalText = btn ? btn.textContent : '';
-  if(btn){ btn.disabled = true; btn.textContent = 'กำลังสร้างรูป...'; }
+  if(btn){ btn.disabled = true; btn.textContent = 'กำลังเตรียม GIF...'; }
   try{
-    const targetWidth = 1080; // เหมาะกับโพสต์ฟีด Instagram
-    const scale = targetWidth / ticketEl.offsetWidth;
-    const canvas = await html2canvas(ticketEl, { scale, backgroundColor: '#121319' });
-    const blob = await new Promise(res => canvas.toBlob(res, 'image/png'));
-    const fileName = `fluk-ticket-${booking.id}.png`;
-    const file = new File([blob], fileName, { type: 'image/png' });
+    const res = await fetch(gifUrl);
+    if(!res.ok) throw new Error('fetch gif failed: ' + res.status);
+    const blob = await res.blob();
+    const fileName = `fluk-fun-${booking.id}.gif`;
+    const file = new File([blob], fileName, { type: 'image/gif' });
+    const shareText = `จองคิว FLUK BARBER SHOP สำเร็จ! รหัส #${booking.id} 🎫`;
     if(navigator.canShare && navigator.canShare({ files: [file] })){
       try{
-        await navigator.share({ files: [file], title: 'บัตรคิว FLUK BARBER SHOP', text: `จองคิวสำเร็จ #${booking.id}` });
+        await navigator.share({ files: [file], title: 'FLUK BARBER SHOP', text: shareText });
         return;
       }catch(shareErr){
         if(shareErr && shareErr.name === 'AbortError') return; // ผู้ใช้กดยกเลิกเอง
       }
     }
+    // เบราว์เซอร์ไม่รองรับ Web Share แบบไฟล์ -> ดาวน์โหลด .gif ตัวจริงไว้ แล้วให้ผู้ใช้แนบลงสตอรี่เอง (ยังขยับได้)
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url; a.download = fileName;
     document.body.appendChild(a); a.click(); a.remove();
     URL.revokeObjectURL(url);
-    toast('บันทึกรูปตั๋วแล้ว นำไปแชร์ลง Instagram ได้เลย');
+    toast('บันทึก GIF แล้ว นำไปแชร์ลงสตอรี่ Instagram ได้เลย (ยังขยับได้)');
   }catch(err){
     console.error('shareTicketImage error', err);
-    toast('สร้างรูปตั๋วไม่สำเร็จ ลองใหม่อีกครั้ง');
+    // ดึงไฟล์ไม่ได้ (เช่นโดน CORS บล็อก) -> เปิดลิงก์ GIF ตรง ๆ ให้ผู้ใช้กดบันทึก/แชร์เอง
+    window.open(gifUrl, '_blank');
+    toast('เปิด GIF ในแท็บใหม่แล้ว กดบันทึกรูปแล้วนำไปแชร์ลงสตอรี่ได้เลย');
   }finally{
-    if(btn){ btn.disabled = false; btn.textContent = originalText || '📤 แชร์รูปตั๋ว'; }
+    if(btn){ btn.disabled = false; btn.textContent = originalText || '📤 แชร์ตั๋วนี้ลง Instagram'; }
   }
 }
 
@@ -667,11 +719,28 @@ function renderStyles(){
     chip.onclick = () => { state.selStyle = s; renderStyles(); onStyleChosen(); };
     wrap.appendChild(chip);
   });
+  renderPhotoAddon();
 }
+
+function renderPhotoAddon(){
+  const toggle = document.getElementById('photoAddonToggle');
+  if(toggle) toggle.classList.toggle('selected', state.addPhotoShoot);
+  updatePriceDisplay();
+}
+
+function updatePriceDisplay(){
+  const el = document.getElementById('priceDisplay');
+  if(el) el.textContent = computeTotalPrice() + ' ฿';
+}
+
+document.getElementById('photoAddonToggle').onclick = () => {
+  state.addPhotoShoot = !state.addPhotoShoot;
+  renderPhotoAddon();
+};
 
 function onStyleChosen(){
   document.getElementById('detailCard').style.display = 'block';
-  document.getElementById('priceDisplay').textContent = state.settings.price + ' ฿';
+  updatePriceDisplay();
 }
 
 document.getElementById('confirmBtn').onclick = async () => {
@@ -690,7 +759,8 @@ document.getElementById('confirmBtn').onclick = async () => {
     const id = Math.random().toString(36).slice(2,6).toUpperCase();
     const booking = {
       id, date: state.selDate, time: state.selTime, style: state.selStyle,
-      name, phone, price: state.settings.price, createdAt: Date.now()
+      name, phone, price: computeTotalPrice(), photoShoot: state.addPhotoShoot, createdAt: Date.now(),
+      funnyGif: getRandomFunnyGif() // สุ่มครั้งเดียวตอนจอง แล้วใช้ตัวเดิมตลอดทั้งตั๋วและตอนแชร์
     };
     await addBooking(booking);
     state.bookings.push(booking);
@@ -714,6 +784,7 @@ document.getElementById('confirmBtn').onclick = async () => {
             <div class="meta-row">📅 ${fmtDate(booking.date)}</div>
             <div class="meta-row">⏰ ${booking.time} น.</div>
             <div class="meta-row">🎫 รหัส #${id}</div>
+            ${booking.photoShoot ? '<div class="meta-row">📷 พร้อมถ่ายรูป (กล้องฟิล์ม)</div>' : ''}
           </div>
           <div class="ticket-dash"></div>
           <div class="stats-row">
@@ -722,7 +793,7 @@ document.getElementById('confirmBtn').onclick = async () => {
           </div>
           <div class="qr-wrap">
             <div class="q-label">แสดง QR นี้กับช่าง</div>
-            <div class="q-box"><img src="${getRandomFunnyGif()}" alt="กวนฮา ตลก" width="150" height="150" style="object-fit:cover;border-radius:6px;"></div>
+            <div class="q-box"><img src="${booking.funnyGif}" alt="กวนฮา ตลก" width="150" height="150" style="object-fit:cover;border-radius:6px;"></div>
           </div>
         </div>
         <div class="ticket-info-block">
@@ -743,12 +814,13 @@ document.getElementById('confirmBtn').onclick = async () => {
     rc.scrollIntoView({ behavior:'smooth', block:'start' });
 
     // reset form for next customer
-    state.selDate = null; state.selTime = null; state.selStyle = null;
+    state.selDate = null; state.selTime = null; state.selStyle = null; state.addPhotoShoot = false;
     document.getElementById('custName').value = '';
     document.getElementById('custPhone').value = '';
     document.getElementById('timeCard').style.display = 'none';
     document.getElementById('styleCard').style.display = 'none';
     document.getElementById('detailCard').style.display = 'none';
+    renderPhotoAddon();
     await renderCustomerDates();
   }catch(err){
     console.error('confirm booking error', err);
@@ -870,7 +942,7 @@ function renderBookingsList(){
     row.innerHTML = `
       <div class="info">
         <b>${fmtDate(b.date)} · ${b.time}</b><br>
-        ${b.name} (${b.phone}) — ${b.style}<br>
+        ${b.name} (${b.phone}) — ${b.style}${b.photoShoot ? ' · 📷 ถ่ายรูป' : ''}<br>
         <span class="muted">รหัส #${b.id} · ${b.price} ฿</span>
       </div>`;
     const btn = document.createElement('button');
